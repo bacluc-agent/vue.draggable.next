@@ -45,7 +45,8 @@ npm i vue@^3.5.0 vuedraggable@4.1.0
 npx vite build
 cat dist/assets/*.js | wc -c
 grep -c 'new Function("Vue"' dist/assets/*.js || echo 0
-grep -lE 'vue/dist/vue.cjs.prod.js|@vue/compiler-core|@vue/compiler-dom' dist/assets/*.map || echo none
+# read only each map's JSON "sources" - sourcesContent legitimately mentions @vue/compiler-dom
+node -e 'const fs=require("fs"),d="dist/assets",bad=/vue\/dist\/vue\.cjs\.prod\.js|@vue\/compiler-core|@vue\/compiler-dom/;const m=fs.existsSync(d)?fs.readdirSync(d).filter(f=>f.endsWith(".map")):[];if(!m.length)console.log("no source maps in "+d);for(const f of m){const h=(JSON.parse(fs.readFileSync(d+"/"+f,"utf8")).sources||[]).filter(s=>bad.test(s));console.log(f+": "+(h.length?h.join(" "):"clean"))}'
 ```
 
 A/B toggle with no publish and no rebuild of `vuedraggable` — the 4.1.0 tarball
@@ -57,7 +58,8 @@ node -e 'const f="node_modules/vuedraggable/package.json";const fs=require("fs")
 npx vite build
 cat dist/assets/*.js | wc -c
 grep -c 'new Function("Vue"' dist/assets/*.js || echo 0
-grep -lE 'vue/dist/vue.cjs.prod.js|@vue/compiler-core|@vue/compiler-dom' dist/assets/*.map || echo none
+# read only each map's JSON "sources" - sourcesContent legitimately mentions @vue/compiler-dom
+node -e 'const fs=require("fs"),d="dist/assets",bad=/vue\/dist\/vue\.cjs\.prod\.js|@vue\/compiler-core|@vue\/compiler-dom/;const m=fs.existsSync(d)?fs.readdirSync(d).filter(f=>f.endsWith(".map")):[];if(!m.length)console.log("no source maps in "+d);for(const f of m){const h=(JSON.parse(fs.readFileSync(d+"/"+f,"utf8")).sources||[]).filter(s=>bad.test(s));console.log(f+": "+(h.length?h.join(" "):"clean"))}'
 ```
 
 ## Actual result
