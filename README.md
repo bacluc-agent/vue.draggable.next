@@ -57,6 +57,42 @@ yarn add vuedraggable@next
 npm i -S vuedraggable@next
 ```
 
+### Bundling: avoiding a second copy of Vue
+
+For `vuedraggable` releases through 4.1.0, consumers using a bundler can
+alias the exact `vue` package import to Vue's runtime-only ESM build:
+
+```js
+// vite.config.js
+import path from "path";
+
+export default {
+  resolve: {
+    alias: {
+      "^vue$": path.resolve(
+        __dirname,
+        "node_modules/vue/dist/vue.runtime.esm-bundler.js"
+      )
+    }
+  }
+};
+```
+
+For webpack, use the same exact-match alias in `resolve.alias`:
+
+```js
+resolve: {
+  alias: {
+    "^vue$": require.resolve("vue/dist/vue.runtime.esm-bundler.js")
+  }
+}
+```
+
+This is a consumer workaround for those releases, not a replacement for the
+package fix. Keep the `^vue$` scope exact: do not alias `vue/compiler-sfc` or
+`vue/jsx-runtime`. Newer package fixes use the ESM source entry and externalize
+Vue so consumers do not need this workaround.
+
 ### with direct link 
 ```html
 

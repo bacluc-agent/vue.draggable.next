@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "verify:no-second-vue": "node assert-no-second-vue.mjs"
+  },
+  "dependencies": {
+    "vue": "^3.5.0",
+    "vuedraggable": "file:../vuedraggable-4.1.0.tgz"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.1",
+    "vite": "6.0.5"
+  }
+}

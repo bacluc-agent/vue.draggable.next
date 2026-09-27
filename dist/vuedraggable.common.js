@@ -4672,8 +4672,8 @@ var componentStructure_ComponentStructure = /*#__PURE__*/function () {
 }();
 
 
-// EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
-var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
+// EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","amd":"vue","root":"Vue"}
+var external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_ = __webpack_require__("8bbf");
 
 // CONCATENATED MODULE: ./src/core/renderHelper.js
 
@@ -4739,7 +4739,7 @@ function getRootInformation(tag) {
   return {
     transition: transition,
     externalComponent: externalComponent,
-    tag: externalComponent ? Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])(tag) : transition ? external_commonjs_vue_commonjs2_vue_root_Vue_["TransitionGroup"] : tag
+    tag: externalComponent ? Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["resolveComponent"])(tag) : transition ? external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["TransitionGroup"] : tag
   };
 }
 
@@ -4788,7 +4788,7 @@ function computeComponentStructure(_ref2) {
 function _emit(evtName, evtData) {
   var _this = this;
 
-  Object(external_commonjs_vue_commonjs2_vue_root_Vue_["nextTick"])(function () {
+  Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["nextTick"])(function () {
     return _this.$emit(evtName.toLowerCase(), evtData);
   });
 }
@@ -4883,7 +4883,7 @@ var props = {
 var emits = ["update:modelValue", "change"].concat(_toConsumableArray([].concat(_toConsumableArray(events.manageAndEmit), _toConsumableArray(events.emit)).map(function (evt) {
   return evt.toLowerCase();
 })));
-var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["defineComponent"])({
+var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["defineComponent"])({
   name: "draggable",
   inheritAttrs: false,
   props: props,
@@ -4913,10 +4913,10 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
         $attrs: $attrs,
         componentData: componentData
       });
-      return componentStructure.render(external_commonjs_vue_commonjs2_vue_root_Vue_["h"], attributes);
+      return componentStructure.render(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["h"], attributes);
     } catch (err) {
       this.error = true;
-      return Object(external_commonjs_vue_commonjs2_vue_root_Vue_["h"])("pre", {
+      return Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["h"])("pre", {
         style: {
           color: "red"
         }
@@ -5008,7 +5008,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
     emitChanges: function emitChanges(evt) {
       var _this5 = this;
 
-      Object(external_commonjs_vue_commonjs2_vue_root_Vue_["nextTick"])(function () {
+      Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["nextTick"])(function () {
         return _this5.$emit("change", evt);
       });
     },
@@ -5182,7 +5182,7 @@ var draggableComponent = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["d
         newIndex: evt.oldIndex,
         swap: true
       };
-      Object(external_commonjs_vue_commonjs2_vue_root_Vue_["nextTick"])(function () {
+      Object(external_commonjs_vue_commonjs2_vue_amd_vue_root_Vue_["nextTick"])(function () {
         var context = swapEvt.to.__draggable_component__;
         context.onDragStart(swapEvt);
         context.onDragAdd(swapEvt);
