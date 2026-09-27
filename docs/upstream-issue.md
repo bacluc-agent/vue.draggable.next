@@ -42,9 +42,9 @@ From the app root, with no configuration beyond the defaults:
 
 ```bash
 npm i vue@^3.5.0 vuedraggable@4.1.0
-npx vite build
+npx vite build --sourcemap
 cat dist/assets/*.js | wc -c
-grep -c 'new Function("Vue"' dist/assets/*.js || echo 0
+grep -c 'new Function("Vue"' dist/assets/*.js
 # read only each map's JSON "sources" - sourcesContent legitimately mentions @vue/compiler-dom
 node -e 'const fs=require("fs"),d="dist/assets",bad=/vue\/dist\/vue\.cjs\.prod\.js|@vue\/compiler-core|@vue\/compiler-dom/;const m=fs.existsSync(d)?fs.readdirSync(d).filter(f=>f.endsWith(".map")):[];if(!m.length)console.log("no source maps in "+d);for(const f of m){const h=(JSON.parse(fs.readFileSync(d+"/"+f,"utf8")).sources||[]).filter(s=>bad.test(s));console.log(f+": "+(h.length?h.join(" "):"clean"))}'
 ```
@@ -55,9 +55,9 @@ installed package at it is the entire fix:
 
 ```bash
 node -e 'const f="node_modules/vuedraggable/package.json";const fs=require("fs");const p=JSON.parse(fs.readFileSync(f));p.module="src/vuedraggable.js";fs.writeFileSync(f,JSON.stringify(p,null,2)+"\n")'
-npx vite build
+npx vite build --sourcemap
 cat dist/assets/*.js | wc -c
-grep -c 'new Function("Vue"' dist/assets/*.js || echo 0
+grep -c 'new Function("Vue"' dist/assets/*.js
 # read only each map's JSON "sources" - sourcesContent legitimately mentions @vue/compiler-dom
 node -e 'const fs=require("fs"),d="dist/assets",bad=/vue\/dist\/vue\.cjs\.prod\.js|@vue\/compiler-core|@vue\/compiler-dom/;const m=fs.existsSync(d)?fs.readdirSync(d).filter(f=>f.endsWith(".map")):[];if(!m.length)console.log("no source maps in "+d);for(const f of m){const h=(JSON.parse(fs.readFileSync(d+"/"+f,"utf8")).sources||[]).filter(s=>bad.test(s));console.log(f+": "+(h.length?h.join(" "):"clean"))}'
 ```
@@ -149,7 +149,16 @@ configuration, reproduces the same markers at a much smaller scale:
 | maps whose `sources` contain `vue/dist/vue.cjs.prod.js` |           1 |           0 |
 | maps whose `sources` contain `@vue/compiler-core`       |           1 |           0 |
 | maps whose `sources` contain `@vue/compiler-dom`        |           1 |           0 |
-| Total `dist/assets/*.js`                                |   312,525 B |   127,420 B |
+| Total `dist/assets/*.js`                                |   313,762 B |   115,999 B |
+
+Those two totals are `cat dist/assets/*.js | wc -c` from that minimal app — the
+`src/main.js` snippet above in a fresh Vite 6 Vue 3 project, one output chunk,
+no `vite.config.js` — measured with Vue 3.5.43 and Vite 6.4.3. They are not
+ecamp3's totals from the table above, and not this repository's `verification/`
+app either, which builds the packed tarball through `@vitejs/plugin-vue`.
+Absolute totals move with the tool patch versions: the same app on Vite 6.0.5
+totals 313,416 B before and 115,994 B after. The marker rows do not move — 1
+before and 0 after on every version measured.
 
 ## References
 
