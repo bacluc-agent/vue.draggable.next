@@ -59,39 +59,45 @@ npm i -S vuedraggable@next
 
 ### Bundling: avoiding a second copy of Vue
 
-For `vuedraggable` releases through 4.1.0, consumers using a bundler can
-alias the exact `vue` package import to Vue's runtime-only ESM build:
+As published through 4.1.0, `vuedraggable`'s `module` entry points at a
+CommonJS/UMD bundle. A bundler therefore resolves its `vue` import to Vue's
+full production build, so your app ships a second Vue together with the template
+compiler. Until you move to a release whose `module` entry is ESM source, alias
+the exact `vue` request to the runtime-only build:
 
 ```js
 // vite.config.js
-import path from "path";
+import { defineConfig } from "vite";
 
-export default {
+export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /^vue$/,
+        replacement: "vue/dist/vue.runtime.esm-bundler.js",
+      },
+    ],
+  },
+});
+```
+
+```js
+// webpack.config.js
+module.exports = {
   resolve: {
     alias: {
-      "^vue$": path.resolve(
-        __dirname,
-        "node_modules/vue/dist/vue.runtime.esm-bundler.js"
-      )
-    }
-  }
+      "vue$": "vue/dist/vue.runtime.esm-bundler.js",
+    },
+  },
 };
 ```
 
-For webpack, use the same exact-match alias in `resolve.alias`:
-
-```js
-resolve: {
-  alias: {
-    "^vue$": require.resolve("vue/dist/vue.runtime.esm-bundler.js")
-  }
-}
-```
-
-This is a consumer workaround for those releases, not a replacement for the
-package fix. Keep the `^vue$` scope exact: do not alias `vue/compiler-sfc` or
-`vue/jsx-runtime`. Newer package fixes use the ESM source entry and externalize
-Vue so consumers do not need this workaround.
+The match has to be exact. A bare `vue` key also rewrites
+`vue/compiler-sfc` and `vue/jsx-runtime` and breaks the build, and `"^vue$"` is
+not a pattern in either tool — a string `find` is compared literally and a
+webpack alias key only marks an exact match with a trailing `$` — so it matches
+nothing and the second Vue stays. Apply the alias only if nothing in your app
+compiles templates at runtime; single-file components and JSX are unaffected.
 
 ### with direct link 
 ```html

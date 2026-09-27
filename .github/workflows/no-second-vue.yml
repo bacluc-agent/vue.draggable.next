@@ -23,14 +23,6 @@ jobs:
         run: NODE_OPTIONS=--openssl-legacy-provider yarn test:unit
       - name: Build library
         run: NODE_OPTIONS=--openssl-legacy-provider yarn build
-      - name: Pack library tarball
-        run: yarn pack --filename vuedraggable-4.1.0.tgz
-      - name: Install verification dependencies
+      - name: Verify no second Vue
         working-directory: verification
-        run: yarn install --frozen-lockfile
-      - name: Build packed-tarball verification app
-        working-directory: verification
-        run: yarn build
-      - name: Assert no second Vue
-        working-directory: verification
-        run: yarn verify:no-second-vue
+        run: npm run verify:no-second-vue

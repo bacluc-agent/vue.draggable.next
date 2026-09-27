@@ -1,8 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "build": "vite build",
-    "verify:no-second-vue": "node assert-no-second-vue.mjs"
+    "verify:no-second-vue": "npm pack .. --pack-destination .. && npm install --no-package-lock && vite build && node assert-no-second-vue.mjs"
   },
   "dependencies": {
     "vue": "^3.5.0",
