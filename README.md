@@ -100,9 +100,9 @@ alias key marks an exact match only with a trailing `$` — so it matches nothin
 and the second Vue stays. Apply the alias only if nothing in your app compiles
 templates at runtime; single-file components and JSX are unaffected.
 
-webpack 4 needs no alias: it ignores the `exports` map and resolves `vue`
-through Vue's own `module` field, which is already runtime-only (measured
-234,390 B, no duplicate Vue).
+webpack 4 needs no alias: it honours `module` for vuedraggable itself, but
+resolves its `require("vue")` through Vue's own `module` field, which is already
+runtime-only (measured 234,390 B, no duplicate Vue).
 
 <details>
 <summary>Measured impact</summary>
