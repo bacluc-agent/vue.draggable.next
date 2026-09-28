@@ -1,11 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "verify:no-second-vue": "node verify-no-second-vue.mjs"
+    "verify:no-second-vue": "node assert-no-second-vue.mjs"
   },
   "dependencies": {
-    "vue": "^3.5.0",
-    "vuedraggable": "file:../vuedraggable.tgz"
+    "vue": "^3.5.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "5.2.1",

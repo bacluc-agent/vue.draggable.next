@@ -4,25 +4,30 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Set up Node 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
       - name: Install root dependencies
         run: npm ci
       - name: Lint
-        run: NODE_OPTIONS=--openssl-legacy-provider npm run lint
+        run: npm run lint -- --no-fix
       - name: Unit tests
-        run: NODE_OPTIONS=--openssl-legacy-provider npm run test:unit
+        run: npm run test:unit
       - name: Build library
         run: NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider npm run build
+      - name: Check dist is in sync
+        run: git diff --exit-code dist/
       - name: Verify no second Vue
         working-directory: verification
         run: NODE_ENV=production npm run verify:no-second-vue
