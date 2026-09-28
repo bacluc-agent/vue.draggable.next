@@ -14,15 +14,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
+          cache: npm
       - name: Install root dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
       - name: Lint
-        run: NODE_OPTIONS=--openssl-legacy-provider yarn lint
+        run: NODE_OPTIONS=--openssl-legacy-provider npm run lint
       - name: Unit tests
-        run: NODE_OPTIONS=--openssl-legacy-provider yarn test:unit
+        run: NODE_OPTIONS=--openssl-legacy-provider npm run test:unit
       - name: Build library
-        run: NODE_OPTIONS=--openssl-legacy-provider yarn build
+        run: NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider npm run build
       - name: Verify no second Vue
         working-directory: verification
-        run: npm run verify:no-second-vue
+        run: NODE_ENV=production npm run verify:no-second-vue

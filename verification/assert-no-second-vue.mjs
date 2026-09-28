@@ -8,6 +8,10 @@ const files = await readdir(assets);
 const scripts = files.filter((file) => file.endsWith(".js"));
 const maps = files.filter((file) => file.endsWith(".js.map"));
 
+if (!scripts.length) {
+  throw new Error("No JavaScript assets found");
+}
+
 for (const file of scripts) {
   const content = await readFile(path.join(assets, file), "utf8");
   if (content.includes('new Function("Vue"')) {
