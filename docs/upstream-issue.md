@@ -1,21 +1,36 @@
 # ESM entry for vuedraggable 4.1.0 bundles a second Vue
 
 `vuedraggable@4.1.0` declares `"module": "dist/vuedraggable.umd.js"`. That file
-is a UMD bundle, so every bundler that honours `module` — Vite, Rollup, webpack
-and esbuild all do — takes its CommonJS branch,
-`factory(require("vue"), require("sortablejs"))`, and resolves the `vue`
-dependency to Vue's **full production CommonJS build**. The consumer's output
-bundle then contains a second, complete Vue plus `@vue/compiler-core` and
+is a UMD bundle, so a bundler that honours `module` and resolves `vue` to a
+`require` condition takes its CommonJS branch,
+`factory(require("vue"), require("sortablejs"))`, and gets Vue's **full
+production CommonJS build** instead of the runtime-only one. The consumer's
+output bundle then contains a second, complete Vue plus `@vue/compiler-core` and
 `@vue/compiler-dom`, and its source map lists `vue/dist/vue.cjs.prod.js`. The
-package has no `exports` map, so a consumer cannot steer bundlers elsewhere
-from the package side.
+package has no `exports` map, so a consumer cannot steer bundlers elsewhere from
+the package side.
+
+`main` has to stay for UMD/CDN consumers, so a bundler that resolves only `main`
+still gets the UMD and still pulls in Vue's full CommonJS build (measured
+724,504 B with webpack 4 forced to `mainFields: ["main"]`). Only the
+consumer-side alias in remedy 3 helps there.
 
 ## Environment
 
 - Package: `vuedraggable@4.1.0`
 - Vue: `3.5.x`
-- Bundler: Vite 6 / Rollup, production mode
+- Bundler: Vite 6.4.3 (minimal app) and webpack 5 (control), production mode
 - Node.js: 20.x
+- Filing target: [SortableJS/Vue.Draggable issues](https://github.com/SortableJS/Vue.Draggable/issues),
+  the repository `CONTRIBUTING.md` points at. `mytheresa/vue.draggable.next`,
+  which published 4.1.0, is archived and cannot take a new issue.
+
+Reproduced with Vite and webpack 5. webpack 4 does not reproduce it: it ignores
+the `exports` map and resolves `vue` through Vue's own `module` field, which is
+already runtime-only (234,390 B, no duplicate). Rollup and esbuild were not
+measured.
+
+- jsfiddle: to be created by @BacLuc — the source below is paste-ready
 
 `CONTRIBUTING.md` asks for a [jsfiddle](http://jsfiddle.net/) (or similar online
 tool) containing a sample demonstrating the bug. This defect has **no runtime
@@ -78,20 +93,22 @@ exactly one Vue with no compiler payload.
    while preserving `main` and `types` for UMD/CJS and TypeScript consumers. Do
    not add an `exports` map: consumers deep-import paths such as
    `vuedraggable/src/util/console` and a restrictive map would break them.
-2. Give the Vue external its AMD name. In 4.1.0's `dist/vuedraggable.umd.js`
-   line 4684 the external is declared as
-   `external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}` — **no `amd`
-   key** — while the emitted AMD branch on line 5 is
-   `define([, "sortablejs"], factory)`. The hole in that array makes an AMD
-   loader call the factory with shifted arguments. It needs
-   `external {"commonjs":"vue","commonjs2":"vue","amd":"vue","root":"Vue"}`,
-   which emits `define(["vue", "sortablejs"], factory)`. `vue` is already
-   external for `commonjs`/`commonjs2`/`root` in 4.1.0, so `amd` is the only
-   missing name. This affects RequireJS/AMD consumers of the UMD file; it is
-   not the cause of the bundle-size symptom above, but it is a real defect in
-   the same wrapper and a one-token fix.
-3. For releases through 4.1.0, document the consumer-side alias that avoids the
-   duplicate. The match must be exact, and each bundler spells exactness
+2. Give the Vue external an AMD name, and declare the external in this repo
+   instead of relying on the framework. `@vue/cli-service`'s lib build
+   (`resolveLibConfig`) appends `vue: { commonjs: "vue", commonjs2: "vue",
+   root: "Vue" }` to the externals itself — with **no `amd` key** — so
+   `dist/vuedraggable.umd.js` declares
+   `external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}` while its AMD
+   branch reads `define([, "sortablejs"], factory)`. The hole in that array
+   makes an AMD loader call the factory with shifted arguments, so Vue is
+   undefined and RequireJS consumers of the UMD file get a throw. Declaring
+   `vue` in `vue.config.js`'s `NODE_ENV === "production"` externals as
+   `{ commonjs: "vue", commonjs2: "vue", amd: "vue", root: "Vue" }` makes the
+   external explicit, emits `define(["vue", "sortablejs"], factory)`, and also
+   keeps Vue external under `--inline-vue`, which drops the framework's entry.
+3. Document the consumer-side alias that avoids the duplicate for consumers
+   still on 4.1.0 or older, i.e. any release whose `module` entry is not ESM
+   source. The match must be exact, and each bundler spells exactness
    differently — `"^vue$"` is **not** a pattern in either tool; it is a request
    for a module literally named `^vue$` and silently matches nothing:
 
@@ -137,11 +154,13 @@ repository's verification app.
 
 The build command was `vite build`; `NODE_ENV=production` is Vite's default mode
 and makes no byte-level difference. Map checks read only the JSON `sources`
-array, never `sourcesContent`. The unit baseline was unchanged: **1275 passed |
-237 skipped**.
+array, never `sourcesContent`. ecamp3's own unit suite was unchanged: **1275
+passed | 237 skipped**; this repository's suite is unchanged at 267 tests in 10
+suites.
 
 Running the reproduction above in a plain Vite 6 app, with no alias and no
-configuration, reproduces the same markers at a much smaller scale:
+configuration, reproduces the same markers at a much smaller scale. Its only
+variable is the `module` toggle from the A/B step — the alias is not involved:
 
 | Marker                                                  |      Before |       After |
 | ------------------------------------------------------- | ----------: | ----------: |
@@ -162,6 +181,7 @@ before and 0 after on every version measured.
 
 ## References
 
-- [Review write-up](https://github.com/bacluc-agent/ecamp3/pull/48)
-- [Archived source repository](https://github.com/mytheresa/vue.draggable.next)
+- Merged upstream A/B measurement: [ecamp/ecamp3#10878](https://github.com/ecamp/ecamp3/pull/10878)
+- BacLuc's write-up of the same A/B in his own fork: [bacluc-agent/ecamp3#48](https://github.com/bacluc-agent/ecamp3/pull/48)
+- Archived source repository, which published 4.1.0: [mytheresa/vue.draggable.next](https://github.com/mytheresa/vue.draggable.next)
 - [Vue package bundler alias](https://github.com/vuejs/core/blob/main/packages/vue/package.json)
