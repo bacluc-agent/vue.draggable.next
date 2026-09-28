@@ -4,6 +4,10 @@ on:
   push:
   workflow_dispatch:
 
+concurrency:
+  group: no-second-vue-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -27,7 +31,10 @@ jobs:
       - name: Build library
         run: NODE_ENV=production NODE_OPTIONS=--openssl-legacy-provider npm run build
       - name: Check dist is in sync
-        run: git diff --exit-code dist/
+        run: test -z "$(git status --porcelain dist/)"
+      - name: Install verification dependencies
+        working-directory: verification
+        run: npm ci
       - name: Verify no second Vue
         working-directory: verification
         run: NODE_ENV=production npm run verify:no-second-vue
