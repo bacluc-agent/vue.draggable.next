@@ -12,3 +12,5 @@ test/tmp
 /coverage
 
 .env.local
+
+/vuedraggable-*.tgz

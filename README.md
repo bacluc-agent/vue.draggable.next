@@ -57,6 +57,67 @@ yarn add vuedraggable@next
 npm i -S vuedraggable@next
 ```
 
+### Bundling: avoiding a second copy of Vue
+
+For releases through 4.1.0, `vuedraggable`'s `module` entry points at a
+CommonJS/UMD bundle. A bundler taking the CommonJS branch resolves its `vue`
+import to Vue's full production build, so your app ships a second Vue together
+with the template compiler. This workaround is only needed through 4.1.0. Until
+you move to a release whose `module` entry is ESM source, alias the exact `vue`
+request to the runtime-only build:
+
+```js
+// vite.config.js
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  resolve: {
+    alias: [
+      {
+        find: /^vue$/,
+        replacement: "vue/dist/vue.runtime.esm-bundler.js",
+      },
+    ],
+  },
+});
+```
+
+```js
+// webpack.config.js
+module.exports = {
+  resolve: {
+    alias: {
+      "vue$": "vue/dist/vue.runtime.esm-bundler.js",
+    },
+  },
+};
+```
+
+The match has to be exact. A bare `vue` key also rewrites
+`vue/compiler-sfc` and `vue/jsx-runtime` and breaks the build. `"^vue$"` is not
+a pattern in either tool — a string `find` is compared literally, and a webpack
+alias key marks an exact match only with a trailing `$` — so it matches nothing
+and the second Vue stays. Apply the alias only if nothing in your app compiles
+templates at runtime; single-file components and JSX are unaffected.
+
+webpack 4 needs no alias: it honours `module` for vuedraggable itself, but
+resolves its `require("vue")` through Vue's own `module` field, which is already
+runtime-only (measured 234,390 B, no duplicate Vue).
+
+<details>
+<summary>Measured impact</summary>
+
+In a Vue 3.5.43 / Vite 6.4.3 production build, the minimal app measured 313,762
+bytes before the alias and 224,668 bytes after it. The duplicate Vue marker and
+each of `vue/dist/vue.cjs.prod.js`, `@vue/compiler-core`, and
+`@vue/compiler-dom` appeared once before and zero times after. Pointing
+`module` at ESM source instead of aliasing brings the same app to 115,999 bytes;
+see [`docs/upstream-issue.md`](docs/upstream-issue.md). Measurements vary with
+tool versions; inspect source-map JSON `sources`, not `sourcesContent`, which
+legitimately contains compiler source text.
+
+</details>
+
 ### with direct link 
 ```html
 
